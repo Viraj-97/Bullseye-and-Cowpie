@@ -1,78 +1,71 @@
-# Import required module 
-import random 
+import tkinter as tk
+from random import randint
 
-# Returns list of digits 
-# of a number 
-def getDigits(num): 
-	return [int(i) for i in str(num)] 
-	
+class CowsAndBulls:
+    def __init__(self):
+        self.window = tk.Tk()
+        self.window.title("Cows and Bulls")
+        self.window.geometry("300x300")
 
-# Returns True if number has 
-# no duplicate digits 
-# otherwise False	 
-def noDuplicates(num): 
-	num_li = getDigits(num) 
-	if len(num_li) == len(set(num_li)): 
-		return True
-	else: 
-		return False
+        self.rounds_label = tk.Label(self.window, text="Enter the number of rounds:")
+        self.rounds_label.pack()
 
+        self.rounds_entry = tk.Entry(self.window, width=10)
+        self.rounds_entry.pack()
 
-# Generates a 4 digit number 
-# with no repeated digits	 
-def generateNum(): 
-	while True: 
-		num = random.randint(1000,9999) 
-		if noDuplicates(num): 
-			return num 
+        self.start_button = tk.Button(self.window, text="Start", command=self.start_game)
+        self.start_button.pack()
 
+        self.guess_label = tk.Label(self.window, text="")
+        self.guess_label.pack()
 
-# Returns common digits with exact 
-# matches (bulls) and the common 
-# digits in wrong position (cows) 
-def numOfBullsCows(num,guess): 
-	bull_cow = [0,0] 
-	num_li = getDigits(num) 
-	guess_li = getDigits(guess) 
-	
-	for i,j in zip(num_li,guess_li): 
-		
-		# common digit present 
-		if j in num_li: 
-		
-			# common digit exact match 
-			if j == i: 
-				bull_cow[0] += 1
-			
-			# common digit match but in wrong position 
-			else: 
-				bull_cow[1] += 1
-				
-	return bull_cow 
-	
-	
-# Secret Code 
-num = generateNum() 
-tries =int(input('Enter number of tries: ')) 
+        self.guess_entry = tk.Entry(self.window, width=10)
+        self.guess_entry.pack()
 
-# Play game until correct guess 
-# or till no tries left 
-while tries > 0: 
-	guess = int(input("Enter your guess between 1000 to 9999: ")) 
-	
-	if not noDuplicates(guess): 
-		print("Number should not have repeated digits. Try again.") 
-		continue
-	if guess < 1000 or guess > 9999: 
-		print("Enter 4 digit number only. Try again.") 
-		continue
-	
-	bull_cow = numOfBullsCows(num,guess) 
-	print(f"{bull_cow[0]} bulls, {bull_cow[1]} cows") 
-	tries -=1
-	
-	if bull_cow[0] == 4: 
-		print("You guessed right!") 
-		break
-else: 
-	print(f"You ran out of tries. Number was {num}")
+        self.result_label = tk.Label(self.window, text="")
+        self.result_label.pack()
+
+        self.round_label = tk.Label(self.window, text="Rounds: 0")
+        self.round_label.pack()
+
+        self.guess_button = tk.Button(self.window, text="Guess", command=self.check_guess, state="disabled")
+        self.guess_button.pack()
+
+        self.window.mainloop()
+
+    def start_game(self):
+        self.rounds = int(self.rounds_entry.get())
+        self.number_to_guess = str(randint(1000, 9999))
+        self.guesses = 0
+        self.guess_label.config(text="Enter your 4-digit guess:")
+        self.guess_button.config(state="normal")
+        self.start_button.config(state="disabled")
+
+    def check_guess(self):
+        guess = self.guess_entry.get()
+        if len(guess) != 4 or not guess.isdigit():
+            self.result_label.config(text="Invalid guess. Please enter a 4-digit number.")
+            return
+
+        cows = 0
+        bulls = 0
+        for i in range(4):
+            if guess[i] == self.number_to_guess[i]:
+                cows += 1
+            elif guess[i] in self.number_to_guess:
+                bulls += 1
+
+        self.guesses += 1
+        self.round_label.config(text=f"Rounds: {self.guesses}/{self.rounds}")
+
+        if cows == 4:
+            self.result_label.config(text=f"Congratulations! You guessed the number in {self.guesses} guesses.\nThe secret code was: {self.number_to_guess}")
+            self.guess_button.config(state="disabled")
+        elif self.guesses == self.rounds:
+            self.result_label.config(text=f"Game over! You didn't guess the number in {self.rounds} rounds.\nThe secret code was: {self.number_to_guess}")
+            self.guess_button.config(state="disabled")
+        else:
+            self.result_label.config(text=f"{cows} cows, {bulls} bulls. Try again!")
+
+if __name__ == "__main__":
+    game = CowsAndBulls()
